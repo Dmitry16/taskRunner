@@ -1,16 +1,19 @@
-const delay = (seconds, num) => {
-    return new Promise( resolve => {
-        setTimeout( () => {
-            resolve(console.log(`kuku from N${num}`))
-        }, seconds * 1000)
-    })
+const logUpdate = require('log-update');
+const toX = () => 'X';
+
+const delay = (seconds) => {
+    return new Promise( resolve => { setTimeout( resolve, seconds * 1000) })
 }
 const tasks = [
-    delay(3, 1),
-    delay(1, 2),
-    delay(2, 3),
-    delay(4, 4),
-    delay(1, 5),
+    delay(3),
+    delay(1),
+    delay(5),
+    delay(1),
+    delay(10),
+    delay(2),
+    delay(7),
+    delay(4),
+    delay(6),
 ]
 class PromiseQue {
     constructor(promises = [], concurrentCount = 1) {
@@ -23,14 +26,26 @@ class PromiseQue {
     get runAnother() {
         return (this.running.length < this.concurrents) && this.todo.length;
     }
+    graphTasks() {
+        const { todo, running, complete } = this;
+        logUpdate(`
+
+            todo[${todo.map(toX)}]
+            running[${running.map(toX)}]
+            complete[${complete.map(toX)}]
+
+        `);
+    }
     run() {
         while(this.runAnother) {
             const promise = this.todo.shift();
             promise.then(() => {
                 this.complete.push(this.running.shift());
+                this.graphTasks();
                 this.run();
             });
             this.running.push(promise);
+            this.graphTasks();
         }
     }
 }
